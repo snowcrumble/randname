@@ -1,8 +1,10 @@
 package randname
 
 import (
-	"testing"
 	"fmt"
+	"testing"
+
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 func Test_pseudoEncrypt(t *testing.T) {
@@ -22,12 +24,12 @@ func TestGenerator(t *testing.T) {
 	g := New(length)
 	g.SetSeq(0)
 	var m = make(map[string]struct{})
-	
+
 	maxSeq := int(g.MaxSeq())
 	if maxSeq > 0xffff { //too big
 		maxSeq = 0xffff
 	}
-	for i:=0; i <= maxSeq; i++ {
+	for i := 0; i <= maxSeq; i++ {
 		name := g.Next()
 		if len(name) != length {
 			t.Fatalf("invalid name length: %v, current i: %v\n", name, i)
@@ -37,6 +39,34 @@ func TestGenerator(t *testing.T) {
 		}
 		m[name] = struct{}{}
 	}
+}
+
+func TestGeneratorConvey(t *testing.T) {
+	length := 10
+	var m = make(map[string]struct{})
+
+	Convey("New a generator", t, func() {
+		g := New(length)
+		g.SetSeq(0)
+		maxSeq := int(g.MaxSeq())
+		if maxSeq > 0xffff { //too big
+			maxSeq = 0xffff
+		}
+
+		Convey("Check generated IDs", func() {
+			for i := 0; i <= maxSeq; i++ {
+				name := g.Next()
+				if len(name) != length {
+					t.Fatalf("invalid name length: %v, current i: %v\n", name, i)
+				}
+				if _, prs := m[name]; prs {
+					t.Fatalf("repeated name: %v, current i: %v\n", name, i)
+				}
+				m[name] = struct{}{}
+			}
+		})
+	})
+
 }
 
 func Test_getBits(t *testing.T) {
