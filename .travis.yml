@@ -1,0 +1,6 @@
+language: go
+
+go:
+- 1.12.x
+
+script: GO111MODULE=auto go test -v ./...
