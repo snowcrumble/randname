@@ -6,7 +6,7 @@ import (
 )
 
 func Test_pseudoEncrypt(t *testing.T) {
-	var seed uint32 = 0
+	var seed uint32
 	var m = make(map[uint32]struct{})
 	for ; seed <= 9999; seed++ {
 		r := pseudoEncrypt(seed, 7)
