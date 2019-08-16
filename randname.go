@@ -28,25 +28,45 @@ func pseudoEncrypt(seed uint32, bits uint) uint32 {
 	return (r1 << bits) + l1
 }
 
+//Acc Accumulator
+type Acc interface {
+	//Incr 返回+1后的结果
+	Incr() (uint32, error)
+}
+
+//SimpleAcc 简单计数器
+type SimpleAcc struct {
+	Seq uint32
+}
+
+//Incr 返回+1后的结果
+func (x *SimpleAcc) Incr() (uint32, error) {
+	x.Seq++
+	return x.Seq, nil
+}
+
 //Generator 唯一ID生成器
 type Generator struct {
-	seq    uint32
+	acc    Acc
 	length int
 	bits   uint
 }
 
-//SetSeq 设置生成器的序列初始值
-func (x *Generator) SetSeq(seq uint32) {
-	x.seq = seq
+//SetAcc 设置序列累加器
+func (x *Generator) SetAcc(acc Acc) {
+	x.acc = acc
 }
 
 //Next 获取一个新的ID
-func (x *Generator) Next() string {
-	n := pseudoEncrypt(x.seq, x.bits)
-	x.seq++
+func (x *Generator) Next() (string, error) {
+	seq, err := x.acc.Incr()
+	if err != nil {
+		return "", err
+	}
+	n := pseudoEncrypt(seq, x.bits)
 
 	format := fmt.Sprintf("%%.%dd", x.length) //字符串前补0格式
-	return fmt.Sprintf(format, uint32(n))
+	return fmt.Sprintf(format, uint32(n)), nil
 }
 
 //New 创建一个唯一ID生成器，可指定数字最大长度，但需要注意，支持的sequence数值范围为 [0, MaxSeq()]
@@ -56,11 +76,9 @@ func New(length int) *Generator {
 	}
 
 	bits := getBits(int(math.Pow10(length) - 1))
-	// fmt.Println("math.Pow10(length)-1: ", math.Pow10(length)-1)
-	// fmt.Println("new bits: ", bits)
 
 	return &Generator{
-		seq:    defaultSequence,
+		acc:    &SimpleAcc{},
 		length: length,
 		bits:   bits,
 	}

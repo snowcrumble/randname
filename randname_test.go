@@ -22,7 +22,6 @@ func Test_pseudoEncrypt(t *testing.T) {
 func TestGenerator(t *testing.T) {
 	length := 10
 	g := New(length)
-	g.SetSeq(0)
 	var m = make(map[string]struct{})
 
 	maxSeq := int(g.MaxSeq())
@@ -30,7 +29,7 @@ func TestGenerator(t *testing.T) {
 		maxSeq = 0xffff
 	}
 	for i := 0; i <= maxSeq; i++ {
-		name := g.Next()
+		name, _ := g.Next()
 		if len(name) != length {
 			t.Fatalf("invalid name length: %v, current i: %v\n", name, i)
 		}
@@ -47,7 +46,6 @@ func TestGeneratorConvey(t *testing.T) {
 
 	Convey("New a generator", t, func() {
 		g := New(length)
-		g.SetSeq(0)
 		maxSeq := int(g.MaxSeq())
 		if maxSeq > 0xffff { //too big
 			maxSeq = 0xffff
@@ -55,7 +53,7 @@ func TestGeneratorConvey(t *testing.T) {
 
 		Convey("Check generated IDs", func() {
 			for i := 0; i <= maxSeq; i++ {
-				name := g.Next()
+				name, _ := g.Next()
 				if len(name) != length {
 					t.Fatalf("invalid name length: %v, current i: %v\n", name, i)
 				}
@@ -77,10 +75,9 @@ func Test_getBits(t *testing.T) {
 
 func ExampleGenerator() {
 	g := New(8)
-	g.SetSeq(0)
 
 	for i := 0; i < 3; i++ {
-		name := g.Next()
+		name, _ := g.Next()
 		fmt.Printf("next name: %s\n", name)
 	}
 }
